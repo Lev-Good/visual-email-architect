@@ -3,1117 +3,787 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual HTML & Email Architect Pro</title>
+    <title>Elite Master Architect IDE</title>
+    <!-- STREAMING_CHUNK:Defining Base Variables and Layout Styles... -->
     <style>
+        /* Base Variables (Dark Mode Default) */
         :root {
-            --primary: #0f172a;       /* Dark Blue */
-            --accent: #2563eb;        /* Vibrant Royal Blue */
-            --accent-green: #10b981;
-            --bg-app: #0f172a;
-            --surface: #ffffff;
-            --border: #e2e8f0;
+            --bg-base: #0f111a;
+            --bg-surface: #1e212b;
+            --bg-element: #292d3e;
+            --border: #3b3f51;
+            --text-main: #eeffff;
+            --text-muted: #8f93a2;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
             --danger: #ef4444;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --transition: 0.3s ease;
         }
 
-        * { box-sizing: border-box; }
+        /* Light Mode */
+        [data-theme="light"] {
+            --bg-base: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-element: #e2e8f0;
+            --border: #cbd5e1;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f1f5f9;
-            margin: 0;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: background-color var(--transition), color var(--transition);
         }
 
-        /* --- Header --- */
+        /* Header / Navbar */
         header {
-            background: var(--surface); height: 60px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-            z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            display: flex; justify-content: space-between; align-items: center;
+            height: 60px; background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border); padding: 0 20px; z-index: 100;
         }
 
-        .brand { font-weight: 800; font-size: 1.15rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .version-badge { background: linear-gradient(90deg, #2563eb, #10b981); color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+        .brand { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .brand span { color: var(--accent); }
 
         .controls { display: flex; gap: 8px; align-items: center; }
-
+        
         .btn {
-            height: 38px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--border);
-            background: white; color: var(--primary); font-size: 0.85rem; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+            background-color: var(--bg-element); color: var(--text-main);
+            border: 1px solid var(--border); border-radius: 6px;
+            padding: 8px 12px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;
         }
-        .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: #fffbeb; }
+        .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-primary { background: var(--primary); color: white; border: none; }
-        .btn-primary:hover:not(:disabled) { background: #1e293b; }
+        .btn-primary { background-color: var(--accent); color: white; border: none; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--accent-hover); color: white; }
+        .icon-btn { padding: 8px; border-radius: 6px; }
 
-        /* Toggle Switch */
-        .toggle-wrapper { display: flex; align-items: center; gap: 8px; margin-left: 15px; font-size: 0.8rem; font-weight: 600; color: #64748b; }
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .divider { width: 1px; height: 20px; background-color: var(--border); margin: 0 8px; }
 
-        /* --- Workspace --- */
-        .workspace { display: flex; flex: 1; height: calc(100vh - 64px); }
+        /* STREAMING_CHUNK:Styling the Workspace and Sidebars... */
+        /* Workspace */
+        .workspace { display: flex; flex: 1; height: calc(100vh - 60px); }
 
-        /* Sidebar */
-        .sidebar {
-            width: 440px; background: var(--surface); border-left: 1px solid var(--border);
-            display: flex; flex-direction: column; z-index: 50;
+        /* Panels */
+        .panel { background-color: var(--bg-surface); display: flex; flex-direction: column; transition: 0.3s; }
+        
+        /* Left Sidebar (Components & Extracted Elements) */
+        .sidebar-left { width: 340px; border-left: 1px solid var(--border); z-index: 50; }
+        
+        /* Search Box */
+        .sidebar-search {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
         }
+        .sidebar-search input {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 6px; background: var(--bg-base); color: var(--text-main);
+            outline: none; font-family: inherit; font-size: 0.9rem; transition: 0.2s;
+        }
+        .sidebar-search input:focus { border-color: var(--accent); }
 
-        .search-box { padding: 12px; border-bottom: 1px solid var(--border); background: #f9fafb; }
-        .search-box input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none; transition: 0.2s; }
-        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.1); }
-
-        .tabs { display: flex; border-bottom: 1px solid var(--border); background: white; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-surface); flex-wrap: wrap; }
         .tab {
-            flex: 1; padding: 14px; text-align: center; cursor: pointer; font-weight: 600; color: #64748b;
-            border-bottom: 3px solid transparent; transition: 0.2s; font-size: 0.9rem;
+            flex: 1 1 30%; padding: 10px 5px; text-align: center; cursor: pointer; font-weight: 600;
+            color: var(--text-muted); border-bottom: 2px solid transparent; transition: 0.2s; font-size: 0.8rem;
         }
-        .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: #fffbeb; }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-element); }
 
-        .panels-container { flex: 1; overflow-y: auto; background: #f9fafb; scroll-behavior: smooth; }
-        .panel { display: none; padding-bottom: 60px; }
-        .panel.active { display: block; }
+        .panels-container { flex: 1; overflow-y: auto; background: var(--bg-base); }
+        .tab-panel { display: none; padding-bottom: 40px; }
+        .tab-panel.active { display: block; }
 
-        /* Groups & Cards */
-        .group-header {
-            padding: 12px 15px; background: #f3f4f6; font-size: 0.75rem; font-weight: 700; color: #4b5563;
-            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-            cursor: pointer; display: flex; justify-content: space-between; user-select: none;
+        .component-btn {
+            width: calc(100% - 24px); margin: 12px auto 0;
+            background-color: var(--bg-surface); color: var(--text-main);
+            border: 1px solid var(--border); padding: 12px; border-radius: 8px;
+            cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s;
         }
-        .group-header:hover { background: #e5e7eb; color: var(--primary); }
-        .group-content.collapsed { display: none; }
+        .component-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
-        .card {
-            padding: 16px; border-bottom: 1px solid var(--border); background: white; position: relative;
-            transition: all 0.2s;
+        /* Element Cards (Extraction) */
+        .element-card { padding: 14px; border-bottom: 1px solid var(--border); background: var(--bg-surface); }
+        .element-card .meta { font-size: 0.7rem; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; text-transform: uppercase; }
+        .element-card textarea, .element-card input, .element-card select {
+            width: 100%; background: var(--bg-base); border: 1px solid var(--border);
+            color: var(--text-main); padding: 10px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; outline: none; margin-bottom: 6px;
         }
-        .card:focus-within { background: #fffcf5; border-left: 4px solid var(--accent); }
-        .card.highlighted { background: #eff6ff; border-left: 4px solid #3b82f6; }
+        .element-card textarea:focus, .element-card input:focus, .element-card select:focus { border-color: var(--accent); }
+        .element-card textarea { resize: vertical; min-height: 70px; }
+        .element-card img { width: 100%; height: 80px; object-fit: contain; background: #fff; margin-bottom: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
 
-        .card-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: #9ca3af; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
-
-        textarea, input[type="text"], select {
-            width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;
-            font-family: inherit; font-size: 0.95rem; background: #f9fafb; outline: none; line-height: 1.5;
-        }
-        textarea:focus, input:focus { border-color: var(--accent); background: white; }
-        textarea { min-height: 80px; resize: vertical; white-space: pre-wrap; }
-
-        /* Preview Area */
-        .preview-area {
-            flex: 1; background: #e5e7eb; display: flex; flex-direction: column;
-            align-items: center; position: relative;
-            background-image: radial-gradient(#9ca3af 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
+        /* STREAMING_CHUNK:Styling the Editor Canvas and Right Sidebar... */
+        /* Center Canvas */
+        .editor-wrapper { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-base); position: relative; }
+        
         .preview-toolbar {
-            margin: 15px; background: var(--primary); padding: 6px; border-radius: 10px;
-            display: flex; gap: 8px; z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-surface); padding: 6px; border-radius: 10px;
+            display: flex; gap: 8px; z-index: 10; box-shadow: var(--shadow); border: 1px solid var(--border);
         }
-        .icon-btn {
-            background: transparent; border: none; color: #94a3b8; padding: 8px 12px;
+        .view-btn {
+            background: transparent; border: none; color: var(--text-muted); padding: 6px 12px;
             border-radius: 6px; cursor: pointer; font-size: 1.1rem; transition: 0.2s;
         }
-        .icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        .icon-btn.active { background: var(--accent); color: white; }
+        .view-btn:hover { background: var(--bg-element); color: var(--text-main); }
+        .view-btn.active { background: var(--accent); color: white; }
 
-        .iframe-wrapper {
-            flex: 1; width: 100%; display: flex; justify-content: center; overflow: hidden; padding-bottom: 20px;
-        }
+        .iframe-wrapper { flex: 1; width: 100%; display: flex; justify-content: center; padding: 70px 20px 20px 20px; overflow-y: auto; overflow-x: hidden; }
         
-        .iframe-shell {
-            background: white; transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column;
-        }
+        .iframe-shell { background: white; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+        .mode-desktop { width: 100%; height: 100%; border: none; border-radius: 8px; }
+        .mode-mobile { width: 375px; height: 100%; min-height: 700px; max-height: 850px; border-radius: 30px; border: 12px solid #334155; }
         
-        .mode-desktop { width: 100%; height: 100%; border: none; }
-        .mode-tablet { width: 768px; height: 90%; border-radius: 20px; border: 10px solid #334155; margin-top: 10px; }
-        .mode-mobile { width: 375px; height: 90%; border-radius: 30px; border: 12px solid #334155; margin-top: 10px; }
+        iframe { width: 100%; height: 100%; border: none; flex: 1; border-radius: inherit; background: #ffffff; }
 
-        iframe { width: 100%; height: 100%; border: none; flex: 1; background: white; }
-
-        /* Elements Palette */
-        .components-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
-        .component-btn {
-            background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;
-            padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px;
-            cursor: pointer; transition: all 0.2s; font-family: inherit; font-size: 0.8rem; font-weight: 600; color: var(--primary);
+        /* Right Sidebar (Code) */
+        .sidebar-right { width: 380px; border-right: 1px solid var(--border); }
+        .panel-header { padding: 12px 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg-surface); display: flex; justify-content: space-between; align-items: center; }
+        #code-editor {
+            flex: 1; background-color: var(--bg-base); color: var(--accent); border: none; padding: 20px;
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6;
+            resize: none; outline: none; direction: ltr; white-space: pre-wrap;
         }
-        .component-btn:hover { background: #eff6ff; border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
-        .component-btn span.icon { font-size: 1.3rem; }
 
-        /* Drop Overlay */
-        #drop-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .drop-box {
-            width: 550px; padding: 50px 40px; border: 2px dashed #475569; border-radius: 20px;
-            text-align: center; cursor: pointer; background: #1e293b; color: white; transition: 0.2s;
-        }
-        .drop-box:hover { border-color: var(--accent); transform: scale(1.02); background: #1e293b; }
-
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
     </style>
 </head>
 <body>
 
-<!-- Overlay -->
-<div id="drop-overlay">
-    <div class="drop-box" id="drop-zone">
-        <div style="font-size:3rem; margin-bottom:10px;">✨</div>
-        <h1 style="margin:0 0 8px 0; color:white;">Visual Architect <span style="font-weight:300; color:var(--accent);">Pro</span></h1>
-        <p style="color:#94a3b8; font-size:1rem; margin-bottom:20px;">עורך ויזואלי מהיר למיילים ודפי HTML עם עריכה ישירה והזזת בלוקים</p>
-        
-        <div style="border:1px dashed #38bdf8; border-radius:12px; padding:20px; margin-bottom:20px; background:rgba(56, 189, 248, 0.05);">
-            📂 לחץ כאן או גרור קובץ HTML לעריכה מיידית
-        </div>
+    <!-- STREAMING_CHUNK:Building the Top Navigation Bar... -->
+    <header>
+        <div class="brand">ELITE <span>ARCHITECT</span></div>
 
-        <div style="display:flex; gap:10px; justify-content:center;">
-            <button class="btn btn-primary" onclick="event.stopPropagation(); loadSampleEmail()">📧 טען מייל לדוגמה</button>
-            <button class="btn" style="background:#334155; color:white; border:none;" onclick="event.stopPropagation(); loadBlankDoc()">📄 דף חדש ריק</button>
-        </div>
-    </div>
-    <input type="file" id="file-input" accept=".html,.htm" style="display:none">
-</div>
-
-<!-- Header -->
-<header>
-    <div class="brand">
-        VISUAL <span style="color:var(--accent)">ARCHITECT</span> <span class="version-badge">PRO</span>
-    </div>
-
-    <div class="controls">
-        <div class="toggle-wrapper">
-            <span>עריכה חיה</span>
-            <label class="switch">
-                <input type="checkbox" id="anim-toggle" checked onchange="toggleAnim()">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div style="width:1px; height:24px; background:var(--border); margin:0 6px;"></div>
-
-        <button class="btn" onclick="undo()" id="btn-undo" disabled title="בטל פעולה (Ctrl+Z)">↩️ בטל</button>
-        <button class="btn" onclick="redo()" id="btn-redo" disabled title="בצע שוב (Ctrl+Y)">↪️ בצע שוב</button>
-        
-        <button class="btn" onclick="document.getElementById('file-input').click()">📂 פתח קובץ</button>
-        <button class="btn" onclick="viewCleanCode()">💻 קוד מקור</button>
-        <button class="btn btn-primary" onclick="exportFile()">שמור והורד 💾</button>
-    </div>
-</header>
-
-<!-- Main Workspace -->
-<div class="workspace">
-    <aside class="sidebar">
-        <div class="search-box">
-            <input type="text" placeholder="חיפוש מהיר..." oninput="filterCards(this.value)">
-        </div>
-        <div class="tabs">
-            <div class="tab active" onclick="setTab('add')">🧩 הוספה</div>
-            <div class="tab" onclick="setTab('text')">טקסט</div>
-            <div class="tab" onclick="setTab('media')">מדיה</div>
-            <div class="tab" onclick="setTab('links')">קישורים</div>
-            <div class="tab" onclick="setTab('seo')">דף ו-SEO</div>
-        </div>
-        <div class="panels-container">
-            <div id="panel-add" class="panel active">
-                <div style="padding:14px 14px 4px 14px; font-size:0.8rem; color:#64748b; font-weight:600;">
-                    לחץ להוספת בלוק חדש למסמך (בסוף או מתחת לאלמנט הנבחר):
-                </div>
-                <div class="components-grid">
-                    <button class="component-btn" onclick="insertBlock('heading')"><span class="icon">🏷️</span>כותרת ראשית</button>
-                    <button class="component-btn" onclick="insertBlock('subheading')"><span class="icon">🔖</span>תת כותרת</button>
-                    <button class="component-btn" onclick="insertBlock('paragraph')"><span class="icon">📝</span>פסקת טקסט</button>
-                    <button class="component-btn" onclick="insertBlock('button')"><span class="icon">🔘</span>כפתור הנעה</button>
-                    <button class="component-btn" onclick="insertBlock('image')"><span class="icon">🖼️</span>תמונה</button>
-                    <button class="component-btn" onclick="insertBlock('columns')"><span class="icon">⚖️</span>שתי עמודות</button>
-                    <button class="component-btn" onclick="insertBlock('card')"><span class="icon">🗂️</span>כרטיס תוכן</button>
-                    <button class="component-btn" onclick="insertBlock('divider')"><span class="icon">➖</span>קו מפריד</button>
-                </div>
-            </div>
-            <div id="panel-text" class="panel"></div>
-            <div id="panel-media" class="panel"></div>
-            <div id="panel-links" class="panel"></div>
-            <div id="panel-seo" class="panel"></div>
-        </div>
-    </aside>
-    <main class="preview-area">
-        <div class="preview-toolbar">
-            <div class="tool-actions-group" style="display:flex; align-items:center; gap:4px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:6px;">
-                <button class="icon-btn" onclick="execCmdInFrame('bold')" title="מודגש (Ctrl+B)"><b>B</b></button>
-                <button class="icon-btn" onclick="execCmdInFrame('italic')" title="נטוי (Ctrl+I)"><i>I</i></button>
-                <button class="icon-btn" onclick="execCmdInFrame('underline')" title="קו תחתון (Ctrl+U)"><u>U</u></button>
-                <div style="width:1px; height:18px; background:#475569; margin:0 2px;"></div>
-                <button class="icon-btn" onclick="execCmdInFrame('justifyRight')" title="יישור לימין">⏩</button>
-                <button class="icon-btn" onclick="execCmdInFrame('justifyCenter')" title="מרכוז">⏸️</button>
-                <button class="icon-btn" onclick="execCmdInFrame('justifyLeft')" title="יישור לשמאל">⏪</button>
-                <div style="width:1px; height:18px; background:#475569; margin:0 2px;"></div>
-                <label title="צבע טקסט" style="cursor:pointer; display:flex; align-items:center; color:#94a3b8; font-size:0.8rem; gap:4px;">
-                    🎨 <input type="color" onchange="execCmdInFrame('foreColor', this.value)" style="width:20px; height:20px; border:none; padding:0; background:transparent; cursor:pointer;">
-                </label>
-                <label title="צבע רקע" style="cursor:pointer; display:flex; align-items:center; color:#94a3b8; font-size:0.8rem; gap:4px; margin-right:4px;">
-                    🖍️ <input type="color" onchange="execCmdInFrame('hiliteColor', this.value)" value="#ffffff" style="width:20px; height:20px; border:none; padding:0; background:transparent; cursor:pointer;">
-                </label>
-            </div>
-            <div style="width:1px; background:#334155; margin:0 5px;"></div>
-            <button class="icon-btn active" onclick="setMode('desktop', this)" title="מחשב">🖥️ מחשב</button>
-            <button class="icon-btn" onclick="setMode('tablet', this)" title="טאבלט">📟 טאבלט</button>
-            <button class="icon-btn" onclick="setMode('mobile', this)" title="סמארטפון">📱 נייד</button>
-            <div style="width:1px; background:#334155; margin:0 5px;"></div>
-            <button class="icon-btn" onclick="refreshFrame()" title="רענון מסמך">⚡</button>
-        </div>
-        <div class="iframe-wrapper">
-            <div class="iframe-shell mode-desktop" id="iframe-shell">
-                <iframe id="preview-frame"></iframe>
-            </div>
-        </div>
-    </main>
-</div>
-
-<script>
-    /**
-     * V11 MASTER EDITION
-     * Features: Newline support (<br>), SEO Tab, Heavy File Fix, Secure Token, Wrapper Strategy.
-     */
-
-    const STATE = {
-        masterDoc: null,
-        token: crypto.randomUUID(),
-        blobUrl: null,
-        history: [],
-        historyIdx: -1,
-        map: { text: {}, img: {}, link: {} },
-        seo: { title: null, desc: null },
-        animationsDisabled: true
-    };
-
-    // --- Init ---
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-
-    dropZone.onclick = (e) => { if(e.target.tagName !== 'BUTTON') fileInput.click(); };
-    fileInput.onchange = e => loadFile(e.target.files[0]);
-    ['dragenter','dragover','dragleave','drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
-    dropZone.addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
-
-    function loadFile(file) {
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = e => bootSystem(e.target.result);
-        reader.readAsText(file);
-    }
-
-    function bootSystem(html) {
-        if(STATE.blobUrl) URL.revokeObjectURL(STATE.blobUrl);
-        STATE.history = [];
-        STATE.historyIdx = -1;
-
-        const parser = new DOMParser();
-        STATE.masterDoc = parser.parseFromString(html, "text/html");
-
-        if(!STATE.masterDoc.querySelector('meta[charset]')) {
-            const m = STATE.masterDoc.createElement('meta');
-            m.setAttribute('charset','UTF-8');
-            STATE.masterDoc.head.prepend(m);
-        }
-
-        // 1. Stabilize DOM (Wrapper Strategy)
-        stabilizeDOM(STATE.masterDoc.body);
-
-        // 2. Identify SEO Elements
-        STATE.seo.title = STATE.masterDoc.querySelector('title');
-        STATE.seo.desc = STATE.masterDoc.querySelector('meta[name="description"]');
-
-        pushHistory();
-        buildMap();
-        renderSidebar();
-        renderIframe();
-
-        document.getElementById('drop-overlay').style.display = 'none';
-        document.getElementById('anim-toggle').checked = true; 
-    }
-
-    function genID() { return 'arch-' + Math.random().toString(36).substr(2, 7); }
-
-    function stabilizeDOM(root) {
-        // Find Text Nodes
-        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-            acceptNode: n => {
-                if(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(n.parentNode.tagName)) return NodeFilter.FILTER_REJECT;
-                if(n.nodeValue.trim().length < 1) return NodeFilter.FILTER_SKIP;
-                return NodeFilter.FILTER_ACCEPT;
-            }
-        });
-
-        const nodes = [];
-        while(walker.nextNode()) nodes.push(walker.currentNode);
-
-        // Wrap them in editable spans with IDs
-        nodes.forEach(node => {
-            const span = STATE.masterDoc.createElement('span');
-            span.setAttribute('data-txt-id', genID());
-            span.textContent = node.nodeValue;
-            node.parentNode.replaceChild(span, node);
-        });
-
-        // Tag Elements
-        STATE.masterDoc.querySelectorAll('img, a').forEach(el => {
-            if(!el.hasAttribute('data-el-id')) el.setAttribute('data-el-id', genID());
-        });
-    }
-
-    // --- Mapping ---
-    function getGroup(el) {
-        let p = el.parentElement;
-        while(p && p !== STATE.masterDoc.body) {
-            if(p.id) return `אזור #${p.id}`;
-            if(p.tagName === 'HEADER') return 'כותרת עליונה';
-            if(p.tagName === 'FOOTER') return 'תחתית הדף';
-            if(p.tagName === 'NAV') return 'תפריט';
-            p = p.parentElement;
-        }
-        return 'תוכן כללי';
-    }
-
-    function buildMap() {
-        STATE.map = { text: {}, img: {}, link: {} };
-        
-        STATE.masterDoc.querySelectorAll('[data-txt-id]').forEach(el => {
-            const id = el.getAttribute('data-txt-id');
-            const grp = getGroup(el);
-            if(!STATE.map.text[grp]) STATE.map.text[grp] = [];
-            // Use innerHTML to capture <br> if we already added them, otherwise textContent
-            STATE.map.text[grp].push({ id, val: el.innerHTML.replace(/<br>/g, '\n'), tag: el.parentElement.tagName });
-        });
-
-        STATE.masterDoc.querySelectorAll('[data-el-id]').forEach(el => {
-            const id = el.getAttribute('data-el-id');
-            const grp = getGroup(el);
-            if(el.tagName === 'IMG') {
-                if(!STATE.map.img[grp]) STATE.map.img[grp] = [];
-                STATE.map.img[grp].push({ id, el });
-            }
-            if(el.tagName === 'A') {
-                if(!STATE.map.link[grp]) STATE.map.link[grp] = [];
-                STATE.map.link[grp].push({ id, el });
-            }
-        });
-    }
-
-    // --- UI Render ---
-    function renderSidebar() {
-        renderPanel('panel-text', STATE.map.text, renderTextCard);
-        renderPanel('panel-media', STATE.map.img, renderImgCard);
-        renderPanel('panel-links', STATE.map.link, renderLinkCard);
-        renderSEO();
-    }
-
-    function renderPanel(pid, data, renderer) {
-        const p = document.getElementById(pid);
-        p.innerHTML = '';
-        const groups = Object.keys(data).sort();
-        if(groups.length === 0) p.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8">אין פריטים</div>';
-
-        groups.forEach(grp => {
-            const w = document.createElement('div');
-            w.innerHTML = `<div class="group-header" onclick="this.nextElementSibling.classList.toggle('collapsed')">${grp} <span>▼</span></div>`;
-            const c = document.createElement('div');
-            c.className = 'group-content';
-            data[grp].forEach(i => c.appendChild(renderer(i)));
-            w.appendChild(c);
-            p.appendChild(w);
-        });
-    }
-
-    function renderTextCard(item) {
-        const d = document.createElement('div');
-        d.className = 'card';
-        d.id = `ui-${item.id}`;
-        d.innerHTML = `
-            <div class="card-meta"><span>${item.tag}</span><span>TXT</span></div>
-            <textarea onfocus="hl('${item.id}','txt')" oninput="updTxt('${item.id}',this.value)">${item.val}</textarea>
-        `;
-        return d;
-    }
-
-    function renderImgCard(item) {
-        const d = document.createElement('div');
-        d.className = 'card';
-        d.id = `ui-${item.id}`;
-        d.innerHTML = `
-            <div class="card-meta">IMG</div>
-            <img src="${item.el.getAttribute('src')}" style="width:100%;height:80px;object-fit:contain;background:#f8f8f8;margin-bottom:5px" id="thumb-${item.id}">
-            <div class="input-group"><label>Source (URL)</label><input type="text" dir="ltr" value="${item.el.getAttribute('src')||''}" onfocus="hl('${item.id}','el')" oninput="updAttr('${item.id}','src',this.value)"></div>
-            <div style="margin-bottom:8px; font-size:0.8rem;"><label style="cursor:pointer;color:var(--accent)">📂 העלה מהמחשב<input type="file" style="display:none" accept="image/*" onchange="localImg('${item.id}',this.files[0])"></label></div>
-            <div class="input-group"><label>Alt Text</label><input type="text" value="${item.el.getAttribute('alt')||''}" oninput="updAttr('${item.id}','alt',this.value)"></div>
-        `;
-        return d;
-    }
-
-    function renderLinkCard(item) {
-        const d = document.createElement('div');
-        d.className = 'card';
-        d.id = `ui-${item.id}`;
-        d.innerHTML = `
-            <div class="card-meta">LINK</div>
-            <div class="input-group"><label>URL</label><input type="text" dir="ltr" value="${item.el.getAttribute('href')||''}" onfocus="hl('${item.id}','el')" oninput="updAttr('${item.id}','href',this.value)"></div>
-            <div class="input-group"><label>Target</label><select onchange="updAttr('${item.id}','target',this.value)"><option value="_self">אותו חלון</option><option value="_blank" ${item.el.getAttribute('target')==='_blank'?'selected':''}>חלון חדש</option></select></div>
-        `;
-        return d;
-    }
-
-    function renderSEO() {
-        const p = document.getElementById('panel-seo');
-        p.innerHTML = '';
-        
-        // Title
-        const titleVal = STATE.seo.title ? STATE.seo.title.innerText : '';
-        const tCard = document.createElement('div');
-        tCard.className = 'card';
-        tCard.innerHTML = `<div class="card-meta">PAGE TITLE</div><input type="text" value="${titleVal}" oninput="updSEO('title', this.value)">`;
-        p.appendChild(tCard);
-
-        // Description
-        const descVal = STATE.seo.desc ? STATE.seo.desc.getAttribute('content') : '';
-        const dCard = document.createElement('div');
-        dCard.className = 'card';
-        dCard.innerHTML = `<div class="card-meta">META DESCRIPTION</div><textarea oninput="updSEO('desc', this.value)">${descVal}</textarea>`;
-        p.appendChild(dCard);
-    }
-
-    function filterCards(query) {
-        const q = query.toLowerCase();
-        document.querySelectorAll('.card').forEach(c => {
-            const txt = c.innerText.toLowerCase() + c.querySelector('input, textarea')?.value.toLowerCase();
-            const visible = txt.includes(q);
-            c.style.display = visible ? 'block' : 'none';
-            if(visible) c.parentElement.classList.remove('collapsed');
-        });
-    }
-
-    // --- Iframe Agent ---
-    function renderIframe() {
-        const clone = STATE.masterDoc.cloneNode(true);
-        const script = clone.createElement('script');
-        script.textContent = `
-            const TOKEN = "${STATE.token}";
+        <div class="controls">
+            <button class="btn icon-btn" onclick="undo()" id="btn-undo" disabled title="בטל (Undo)">↩️</button>
+            <button class="btn icon-btn" onclick="redo()" id="btn-redo" disabled title="חזור (Redo)">↪️</button>
             
-            // 1. CSS Fixes for Heavy Files & Hover outline
-            const css = document.createElement('style');
-            css.innerHTML = 'html, body { height: auto !important; min-height: 100% !important; overflow: auto !important; }' +
-                '[data-txt-id], [data-el-id] { cursor: text; transition: outline 0.15s ease; }' +
-                '[data-txt-id]:hover, [data-el-id]:hover { outline: 1.5px dashed #3b82f6 !important; }';
-            document.head.appendChild(css);
+            <div class="divider"></div>
+            
+            <button class="btn icon-btn" onclick="toggleTheme()" title="החלף עיצוב">🌓</button>
+            
+            <div class="divider"></div>
 
-            // 2. Kill Preloaders
-            document.addEventListener("DOMContentLoaded", () => {
-                document.querySelectorAll('#loader, .loader, #preloader, .preloader, .loading').forEach(l => l.style.display='none');
-            });
-
-            // 3. Animation Control
-            const animStyle = document.createElement('style');
-            animStyle.id = 'anim-override';
-            animStyle.innerHTML = '[data-aos], .wow { opacity: 1 !important; transform: none !important; visibility: visible !important; animation: none !important; transition: none !important; }';
-            document.head.appendChild(animStyle);
-
-            // 4. Message Handler
-            window.addEventListener('message', e => {
-                if(e.data.token !== TOKEN) return;
-                const d = e.data;
-
-                if(d.type === 'toggle-anim') {
-                    const st = document.getElementById('anim-override');
-                    if(d.state) { if(!st) document.head.appendChild(animStyle); }
-                    else { if(st) st.remove(); window.dispatchEvent(new Event('resize')); }
-                }
-
-                if(d.type === 'text') {
-                    const el = document.querySelector('[data-txt-id="'+d.id+'"]');
-                    if(el) el.innerHTML = d.val;
-                }
-                
-                if(d.type === 'attr') {
-                    const el = document.querySelector('[data-el-id="'+d.id+'"]');
-                    if(el) el.setAttribute(d.prop, d.val);
-                }
-
-                if(d.type === 'seo-title') document.title = d.val;
-
-                if(d.type === 'hl') showBox(d.id, d.kind);
-
-                if(d.type === 'exec-cmd') {
-                    if(activeEl) {
-                        activeEl.focus();
-                        document.execCommand(d.cmd, false, d.val);
-                        onElementEdited();
-                    }
-                }
-            });
-
-            // 5. Advanced Inline Editing & Floating Action Bar
-            let activeEl = null;
-            let floatingBar = null;
-
-            function getOrCreateBar() {
-                if(!floatingBar) {
-                    floatingBar = document.createElement('div');
-                    floatingBar.id = 'arch-floating-bar';
-                    floatingBar.style.cssText = 'position:absolute;display:none;background:#0f172a;color:white;border-radius:8px;padding:4px 8px;z-index:999999;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:system-ui,sans-serif;font-size:12px;gap:4px;align-items:center;user-select:none;direction:rtl;';
-                    floatingBar.innerHTML = '' +
-                        '<button data-action="moveUp" title="הזז למעלה" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;padding:4px;font-size:13px;">⬆️</button>' +
-                        '<button data-action="moveDown" title="הזז למטה" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;padding:4px;font-size:13px;">⬇️</button>' +
-                        '<div style="width:1px;height:16px;background:#475569;margin:0 2px;"></div>' +
-                        '<button data-action="bold" title="הדגש טקסט" style="background:transparent;border:none;color:white;cursor:pointer;padding:4px;font-weight:bold;">B</button>' +
-                        '<button data-action="italic" title="הטה טקסט" style="background:transparent;border:none;color:white;cursor:pointer;padding:4px;font-style:italic;">I</button>' +
-                        '<button data-action="link" title="הוסף קישור" style="background:transparent;border:none;color:#38bdf8;cursor:pointer;padding:4px;">🔗</button>' +
-                        '<div style="width:1px;height:16px;background:#475569;margin:0 2px;"></div>' +
-                        '<button data-action="dup" title="שכפל" style="background:transparent;border:none;color:#a7f3d0;cursor:pointer;padding:4px;">📋</button>' +
-                        '<button data-action="del" title="מחק" style="background:transparent;border:none;color:#fca5a5;cursor:pointer;padding:4px;">🗑️</button>';
-                    document.body.appendChild(floatingBar);
-
-                    floatingBar.addEventListener('click', e => {
-                        e.stopPropagation();
-                        const btn = e.target.closest('button');
-                        if(!btn || !activeEl) return;
-                        const act = btn.getAttribute('data-action');
-                        const isTxt = activeEl.hasAttribute('data-txt-id');
-                        const id = isTxt ? activeEl.getAttribute('data-txt-id') : activeEl.getAttribute('data-el-id');
-
-                        if(act === 'moveUp' || act === 'moveDown' || act === 'dup' || act === 'del') {
-                            window.parent.postMessage({ token: TOKEN, type: 'dom-action', action: act, id, isTxt }, '*');
-                        } else if(act === 'bold') {
-                            document.execCommand('bold', false, null);
-                            onElementEdited();
-                        } else if(act === 'italic') {
-                            document.execCommand('italic', false, null);
-                            onElementEdited();
-                        } else if(act === 'link') {
-                            const u = prompt('הכנס כתובת קישור (URL):', 'https://');
-                            if(u) {
-                                document.execCommand('createLink', false, u);
-                                onElementEdited();
-                            }
-                        }
-                    });
-                }
-                return floatingBar;
-            }
-
-            function updateBarPos() {
-                if(!activeEl || !floatingBar) return;
-                const r = activeEl.getBoundingClientRect();
-                const top = Math.max(10, r.top + window.scrollY - 38);
-                const left = Math.max(10, r.left + window.scrollX);
-                floatingBar.style.top = top + 'px';
-                floatingBar.style.left = left + 'px';
-                floatingBar.style.display = 'flex';
-            }
-
-            function onElementEdited() {
-                if(!activeEl) return;
-                const isTxt = activeEl.hasAttribute('data-txt-id');
-                const id = isTxt ? activeEl.getAttribute('data-txt-id') : activeEl.getAttribute('data-el-id');
-                window.parent.postMessage({
-                    token: TOKEN,
-                    type: 'direct-input',
-                    id: id,
-                    isTxt: isTxt,
-                    html: activeEl.innerHTML,
-                    text: activeEl.innerText
-                }, '*');
-                updateBarPos();
-            }
-
-            // Click & Selection Sync
-            document.addEventListener('click', e => {
-                const w = e.target.closest('[data-txt-id], [data-el-id]');
-                if(w) {
-                    if(activeEl && activeEl !== w) {
-                        activeEl.removeAttribute('contenteditable');
-                    }
-                    activeEl = w;
-                    activeEl.setAttribute('contenteditable', 'true');
-                    activeEl.focus();
-                    const isTxt = w.hasAttribute('data-txt-id');
-                    const id = isTxt ? w.getAttribute('data-txt-id') : w.getAttribute('data-el-id');
-                    window.parent.postMessage({ token: TOKEN, type: 'sync', id }, '*');
-                    showBox(id, isTxt ? 'txt' : 'el');
-                    getOrCreateBar();
-                    updateBarPos();
-                } else if(!e.target.closest('#arch-floating-bar')) {
-                    if(floatingBar) floatingBar.style.display = 'none';
-                    if(activeEl) {
-                        activeEl.removeAttribute('contenteditable');
-                        activeEl = null;
-                    }
-                    if(box) box.style.display = 'none';
-                }
-            }, false);
-
-            // Live keystroke updates directly from document
-            document.addEventListener('input', e => {
-                const w = e.target.closest('[data-txt-id], [data-el-id]');
-                if(w && w === activeEl) {
-                    onElementEdited();
-                }
-            });
-
-            window.addEventListener('scroll', updateBarPos);
-            window.addEventListener('resize', updateBarPos);
-
-            let box;
-            function showBox(id, kind) {
-                const sel = kind==='txt' ? '[data-txt-id="'+id+'"]' : '[data-el-id="'+id+'"]';
-                const el = document.querySelector(sel);
-                if(!el) return;
-                if(!box) {
-                    box = document.createElement('div');
-                    box.style.cssText = "position:absolute;outline:2px solid #2563eb;z-index:99998;pointer-events:none;box-shadow:0 0 10px rgba(37,99,235,0.3);transition:0.1s;border-radius:4px;";
-                    document.body.appendChild(box);
-                }
-                const range = document.createRange();
-                range.selectNodeContents(el);
-                const r = range.getBoundingClientRect();
-                box.style.display='block';
-                box.style.top = (r.top + window.scrollY)+'px';
-                box.style.left = (r.left + window.scrollX)+'px';
-                box.style.width = r.width+'px';
-                box.style.height = r.height+'px';
-            }
-        `;
-        clone.body.appendChild(script);
-
-        const blob = new Blob([new XMLSerializer().serializeToString(clone)], {type: 'text/html'});
-        if(STATE.blobUrl) URL.revokeObjectURL(STATE.blobUrl);
-        STATE.blobUrl = URL.createObjectURL(blob);
-        document.getElementById('preview-frame').src = STATE.blobUrl;
-
-        window.onmessage = (e) => {
-            if(e.data.token !== STATE.token) return;
-            if(e.data.type === 'sync') {
-                STATE.selectedId = e.data.id;
-                const c = document.getElementById(`ui-${e.data.id}`);
-                if(c) {
-                    const p = c.closest('.panel');
-                    setTab(p.id.replace('panel-',''));
-                    c.scrollIntoView({behavior:'smooth', block:'center'});
-                    c.classList.add('highlighted');
-                    setTimeout(()=>c.classList.remove('highlighted'),1000);
-                }
-            } else if(e.data.type === 'direct-input') {
-                STATE.selectedId = e.data.id;
-                const sel = e.data.isTxt ? `[data-txt-id="${e.data.id}"]` : `[data-el-id="${e.data.id}"]`;
-                const el = STATE.masterDoc.querySelector(sel);
-                if(el) {
-                    el.innerHTML = e.data.html;
-                    const cardInput = document.querySelector(`#ui-${e.data.id} textarea, #ui-${e.data.id} input`);
-                    if(cardInput) cardInput.value = e.data.text;
-                    triggerSave();
-                }
-            } else if(e.data.type === 'dom-action') {
-                handleDomAction(e.data.action, e.data.id, e.data.isTxt);
-            }
-        };
-    }
-
-    function handleDomAction(action, id, isTxt) {
-        const sel = isTxt ? `[data-txt-id="${id}"]` : `[data-el-id="${id}"]`;
-        const el = STATE.masterDoc.querySelector(sel);
-        if(!el) return;
-
-        // Find the block container (or parent block if inline)
-        let targetBlock = el;
-        if(isTxt && targetBlock.parentElement && targetBlock.parentElement !== STATE.masterDoc.body) {
-            targetBlock = targetBlock.parentElement;
-        }
-
-        if(action === 'moveUp') {
-            const prev = targetBlock.previousElementSibling;
-            if(prev) {
-                targetBlock.parentElement.insertBefore(targetBlock, prev);
-                rebuildAndRefresh();
-            }
-        } else if(action === 'moveDown') {
-            const next = targetBlock.nextElementSibling;
-            if(next) {
-                targetBlock.parentElement.insertBefore(next, targetBlock);
-                rebuildAndRefresh();
-            }
-        } else if(action === 'dup') {
-            const clone = targetBlock.cloneNode(true);
-            clone.querySelectorAll('[data-txt-id]').forEach(n => n.setAttribute('data-txt-id', genID()));
-            clone.querySelectorAll('[data-el-id]').forEach(n => n.setAttribute('data-el-id', genID()));
-            targetBlock.parentElement.insertBefore(clone, targetBlock.nextSibling);
-            rebuildAndRefresh();
-        } else if(action === 'del') {
-            targetBlock.remove();
-            rebuildAndRefresh();
-        }
-    }
-
-    function rebuildAndRefresh() {
-        pushHistory();
-        buildMap();
-        renderSidebar();
-        renderIframe();
-    }
-
-    // --- Actions ---
-    let debouncer;
-    function triggerSave() {
-        clearTimeout(debouncer);
-        debouncer = setTimeout(pushHistory, 600);
-    }
-
-    function updTxt(id, val) {
-        // Sanitize and convert \n to <br>
-        const safeVal = val.replace(/&/g, "&amp;")
-                           .replace(/</g, "&lt;")
-                           .replace(/>/g, "&gt;")
-                           .replace(/\n/g, "<br>");
-        
-        // Master Doc Update
-        const el = STATE.masterDoc.querySelector(`[data-txt-id="${id}"]`);
-        if(el) el.innerHTML = safeVal;
-
-        // Iframe Update
-        msg({ type: 'text', id, val: safeVal });
-        triggerSave();
-    }
-
-    function updAttr(id, prop, val) {
-        const el = STATE.masterDoc.querySelector(`[data-el-id="${id}"]`);
-        if(el) el.setAttribute(prop, val);
-        msg({ type: 'attr', id, prop, val });
-        if(prop === 'src') document.getElementById(`thumb-${id}`).src = val;
-        triggerSave();
-    }
-
-    function updSEO(type, val) {
-        if(type === 'title') {
-            if(STATE.seo.title) STATE.seo.title.innerText = val;
-            msg({ type: 'seo-title', val });
-        }
-        if(type === 'desc') {
-            if(STATE.seo.desc) STATE.seo.desc.setAttribute('content', val);
-        }
-        triggerSave();
-    }
-
-    function localImg(id, file) {
-        if(!file) return;
-        const r = new FileReader();
-        r.onload = e => {
-            const b64 = e.target.result;
-            document.getElementById(`ui-${id}`).querySelector('input').value = "[Base64 Image]";
-            updAttr(id, 'src', b64);
-        };
-        r.readAsDataURL(file);
-    }
-
-    function toggleAnim() {
-        const isEdit = document.getElementById('anim-toggle').checked;
-        msg({ type: 'toggle-anim', state: isEdit });
-    }
-
-    function hl(id, kind) { msg({ type: 'hl', id, kind }); }
-    
-    function execCmdInFrame(cmd, val = null) {
-        msg({ type: 'exec-cmd', cmd, val });
-    }
-
-    function msg(data) {
-        data.token = STATE.token;
-        const w = document.getElementById('preview-frame').contentWindow;
-        if(w) w.postMessage(data, '*');
-    }
-
-    // --- Undo/Redo ---
-    function pushHistory() {
-        if(STATE.historyIdx < STATE.history.length - 1) {
-            STATE.history = STATE.history.slice(0, STATE.historyIdx + 1);
-        }
-        STATE.history.push(new XMLSerializer().serializeToString(STATE.masterDoc));
-        STATE.historyIdx++;
-        updateBtns();
-    }
-    function undo() {
-        if(STATE.historyIdx > 0) {
-            STATE.historyIdx--;
-            restore(STATE.history[STATE.historyIdx]);
-        }
-    }
-    function redo() {
-        if(STATE.historyIdx < STATE.history.length - 1) {
-            STATE.historyIdx++;
-            restore(STATE.history[STATE.historyIdx]);
-        }
-    }
-    function restore(html) {
-        const parser = new DOMParser();
-        STATE.masterDoc = parser.parseFromString(html, "text/html");
-        // Re-bind SEO refs
-        STATE.seo.title = STATE.masterDoc.querySelector('title');
-        STATE.seo.desc = STATE.masterDoc.querySelector('meta[name="description"]');
-        
-        buildMap();
-        renderSidebar();
-        renderIframe();
-        updateBtns();
-    }
-    function updateBtns() {
-        document.getElementById('btn-undo').disabled = STATE.historyIdx <= 0;
-        document.getElementById('btn-redo').disabled = STATE.historyIdx >= STATE.history.length - 1;
-    }
-
-    // --- Export (Smart Unwrap) ---
-    function exportFile() {
-        const c = STATE.masterDoc.cloneNode(true);
-        
-        // Unwrap text spans but PRESERVE <br> tags
-        c.querySelectorAll('span[data-txt-id]').forEach(span => {
-            // Move children (text + br) to parent
-            while(span.firstChild) {
-                span.parentNode.insertBefore(span.firstChild, span);
-            }
-            span.remove();
-        });
-
-        // Remove IDs
-        c.querySelectorAll('[data-el-id]').forEach(e => e.removeAttribute('data-el-id'));
-
-        const html = new XMLSerializer().serializeToString(c);
-        const blob = new Blob([html], {type:'text/html'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'website_final.html';
-        a.click();
-    }
-
-    function setTab(t) {
-        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-        document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-        const idx = ['add','text','media','links','seo'].indexOf(t);
-        if(idx !== -1) {
-            document.querySelectorAll('.tab')[idx].classList.add('active');
-            document.getElementById(`panel-${t}`).classList.add('active');
-        }
-    }
-    function setMode(m, b) {
-        document.querySelectorAll('.icon-btn').forEach(x=>x.classList.remove('active'));
-        b.classList.add('active');
-        document.getElementById('iframe-shell').className = `iframe-shell mode-${m}`;
-    }
-    function refreshFrame() { renderIframe(); }
-
-    // --- Component Insertion ---
-    function insertBlock(type) {
-        if(!STATE.masterDoc) return;
-        const div = STATE.masterDoc.createElement('div');
-        div.setAttribute('data-el-id', genID());
-        div.style.padding = '12px 0';
-
-        if (type === 'heading') {
-            const h = STATE.masterDoc.createElement('h2');
-            h.style.cssText = 'color:#1e3a8a; font-size:24px; margin:0 0 10px 0;';
-            const s = STATE.masterDoc.createElement('span');
-            s.setAttribute('data-txt-id', genID());
-            s.textContent = 'כותרת חדשה מרשימה';
-            h.appendChild(s);
-            div.appendChild(h);
-        } else if (type === 'subheading') {
-            const h = STATE.masterDoc.createElement('h3');
-            h.style.cssText = 'color:#4b5563; font-size:18px; margin:0 0 8px 0;';
-            const s = STATE.masterDoc.createElement('span');
-            s.setAttribute('data-txt-id', genID());
-            s.textContent = 'תת כותרת תיאורית';
-            h.appendChild(s);
-            div.appendChild(h);
-        } else if (type === 'paragraph') {
-            const p = STATE.masterDoc.createElement('p');
-            p.style.cssText = 'font-size:16px; line-height:1.6; color:#374151; margin:0;';
-            const s = STATE.masterDoc.createElement('span');
-            s.setAttribute('data-txt-id', genID());
-            s.textContent = 'זהו מקטע טקסט לדוגמה. תוכל ללחוץ עליו ישירות כדי להקליד ולערוך אותו בחופשיות.';
-            p.appendChild(s);
-            div.appendChild(p);
-        } else if (type === 'button') {
-            div.style.textAlign = 'center';
-            const a = STATE.masterDoc.createElement('a');
-            a.setAttribute('data-el-id', genID());
-            a.setAttribute('href', 'https://example.com');
-            a.style.cssText = 'display:inline-block; background-color:#2563eb; color:#ffffff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:16px;';
-            const s = STATE.masterDoc.createElement('span');
-            s.setAttribute('data-txt-id', genID());
-            s.textContent = 'לחץ כאן ←';
-            a.appendChild(s);
-            div.appendChild(a);
-        } else if (type === 'image') {
-            div.style.textAlign = 'center';
-            const img = STATE.masterDoc.createElement('img');
-            img.setAttribute('data-el-id', genID());
-            img.setAttribute('src', 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&auto=format&fit=crop&q=80');
-            img.setAttribute('alt', 'תמונה לדוגמה');
-            img.style.cssText = 'max-width:100%; border-radius:8px; display:inline-block;';
-            div.appendChild(img);
-        } else if (type === 'columns') {
-            div.innerHTML = `
-                <div style="display:flex; gap:16px; margin:10px 0;">
-                    <div style="flex:1; background:#f3f4f6; padding:16px; border-radius:8px;">
-                        <h4 style="margin:0 0 6px 0; color:#1f2937;"><span data-txt-id="${genID()}">עמודה 1</span></h4>
-                        <p style="margin:0; font-size:14px; color:#4b5563;"><span data-txt-id="${genID()}">תוכן העמודה הראשונה.</span></p>
-                    </div>
-                    <div style="flex:1; background:#f3f4f6; padding:16px; border-radius:8px;">
-                        <h4 style="margin:0 0 6px 0; color:#1f2937;"><span data-txt-id="${genID()}">עמודה 2</span></h4>
-                        <p style="margin:0; font-size:14px; color:#4b5563;"><span data-txt-id="${genID()}">תוכן העמודה השנייה.</span></p>
-                    </div>
-                </div>`;
-        } else if (type === 'card') {
-            div.innerHTML = `
-                <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); margin:10px 0;">
-                    <h3 style="margin:0 0 10px 0; color:#111827;"><span data-txt-id="${genID()}">כרטיס תוכן מודרני</span></h3>
-                    <p style="margin:0 0 15px 0; color:#6b7280; font-size:14px; line-height:1.5;"><span data-txt-id="${genID()}">הוסף מידע חשוב, הדגשים או עדכונים לקוראים שלך.</span></p>
-                    <a data-el-id="${genID()}" href="#" style="color:#2563eb; font-weight:600; text-decoration:none; font-size:14px;"><span data-txt-id="${genID()}">קרא עוד ←</span></a>
-                </div>`;
-        } else if (type === 'divider') {
-            div.innerHTML = `<hr style="border:none; border-top:1px solid #e2e8f0; margin:20px 0;">`;
-        }
-
-        const bodyTarget = STATE.masterDoc.querySelector('.email-wrapper') || STATE.masterDoc.querySelector('.container') || STATE.masterDoc.body;
-        bodyTarget.appendChild(div);
-        rebuildAndRefresh();
-    }
-
-    // --- Ready Templates ---
-    function loadSampleEmail() {
-        const sampleHtml = `<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניוזלטר מיוחד</title>
-    <style>
-        body { margin: 0; padding: 20px; background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; color: #334155; }
-        .email-wrapper { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .hero { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 40px 30px; text-align: center; }
-        .content { padding: 35px 30px; line-height: 1.7; }
-        .button-cta { display: inline-block; background-color: #2563eb; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; margin: 20px 0; }
-        .features { display: flex; gap: 15px; margin: 25px 0; }
-        .feature-box { flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; }
-        .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
-    </style>
-</head>
-<body>
-    <div class="email-wrapper">
-        <div class="hero">
-            <h1 style="margin: 0; font-size: 28px; font-weight: 800;">הודעה מיוחדת עבורך 🚀</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">עיצוב מודרני מותאם אישית למחשב ולנייד</p>
+            <button class="btn" onclick="document.getElementById('file-input').click()">📂 ייבוא קובץ</button>
+            <input type="file" id="file-input" accept=".html,.htm" style="display:none" onchange="importFile(event)">
+            
+            <button class="btn btn-primary" onclick="exportFile()">💾 ייצוא HTML</button>
         </div>
-        <div class="content">
-            <h2 style="color: #1e293b; margin-top: 0;">שלום וברוך הבא,</h2>
-            <p>שמחים לשתף אותך בגרסה החדשה! כעת באפשרותך לערוך כל חלק במסמך ישירות בלחיצה עליו, לשנות צבעים, להוסיף תמונות ולסדר מחדש בלוקים בפשטות ובקלות.</p>
-            <div style="text-align: center;">
-                <a href="https://example.com" class="button-cta">לחץ כאן כדי להתחיל</a>
+    </header>
+
+    <!-- STREAMING_CHUNK:Constructing the Left Sidebar Layout... -->
+    <div class="workspace">
+        <!-- Left Sidebar -->
+        <aside class="panel sidebar-left">
+            <div class="sidebar-search">
+                <input type="text" id="search-input" placeholder="חיפוש טקסט או תוכן..." oninput="filterSidebar(this.value)">
             </div>
-            <div class="features">
-                <div class="feature-box">
-                    <h3 style="margin: 0 0 8px 0; color: #2563eb;">⚡ מהיר</h3>
-                    <p style="margin: 0; font-size: 14px;">עריכה מיידית ונוחה ישירות בדפדפן.</p>
+            <div class="tabs">
+                <div class="tab active" onclick="setTab('components')">רכיבים</div>
+                <div class="tab" onclick="setTab('text')">טקסטים</div>
+                <div class="tab" onclick="setTab('media')">מדיה</div>
+                <div class="tab" onclick="setTab('links')">קישורים</div>
+                <div class="tab" onclick="setTab('seo')">SEO</div>
+            </div>
+            
+            <div class="panels-container">
+                <!-- Components Tab -->
+                <div id="panel-components" class="tab-panel active">
+                    <button class="component-btn" onclick="insertElement('<h1 style=\'margin-bottom:15px; color:#1e293b;\'>כותרת ראשית H1</h1>')">
+                        <span style="font-size:1.2rem;">H1</span> הוסף כותרת
+                    </button>
+                    <button class="component-btn" onclick="insertElement('<p style=\'margin-bottom:15px; line-height:1.6; color:#475569;\'>פסקה של טקסט. לחץ פעמיים על הטקסט כדי לערוך אותו, לשנות צבעים ולהוסיף קישורים דרך הסרגל הצף.</p>')">
+                        <span style="font-size:1.2rem;">¶</span> הוסף פסקה
+                    </button>
+                    <button class="component-btn" onclick="insertElement('<div style=\'padding:30px; background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; min-height:100px;\'>בלוק מיכל (Container) - גרור לתוכו רכיבים אחרים</div>')">
+                        <span style="font-size:1.2rem;">📦</span> הוסף אזור/מיכל
+                    </button>
+                    <button class="component-btn" onclick="insertElement('<a href=\'#\' style=\'display:inline-block; padding:12px 28px; background-color:#2563eb; color:white; border:none; text-decoration:none; border-radius:6px; cursor:pointer; font-weight:bold; margin-bottom:15px; font-size:16px;\'>כפתור קישור</a>')">
+                        <span style="font-size:1.2rem;">🔗</span> הוסף כפתור קישור
+                    </button>
+                    <button class="component-btn" onclick="insertElement('<img src=\'https://via.placeholder.com/800x400\' style=\'max-width:100%; border-radius:8px; margin-bottom:15px; display:block;\' alt=\'תמונה\'>')">
+                        <span style="font-size:1.2rem;">🖼️</span> הוסף תמונה
+                    </button>
+                    <div style="padding: 20px; text-align: center; margin-top: 20px;">
+                        <button class="btn" onclick="clearCanvas()" style="width: 100%; justify-content: center; border-color: var(--danger); color: var(--danger);">🗑️ נקה מסמך</button>
+                    </div>
                 </div>
-                <div class="feature-box">
-                    <h3 style="margin: 0 0 8px 0; color: #10b981;">🛡️ תקני</h3>
-                    <p style="margin: 0; font-size: 14px;">ייצוא קוד תקני שנראה מעולה בכל לקוח מייל.</p>
+
+                <!-- Extracted Content Tabs -->
+                <div id="panel-text" class="tab-panel"></div>
+                <div id="panel-media" class="tab-panel"></div>
+                <div id="panel-links" class="tab-panel"></div>
+                <div id="panel-seo" class="tab-panel"></div>
+            </div>
+        </aside>
+
+        <!-- STREAMING_CHUNK:Building Editor Canvas and Code Sidebar... -->
+        <!-- Center Canvas -->
+        <main class="editor-wrapper">
+            <div class="preview-toolbar">
+                <button class="view-btn active" onclick="setViewMode('desktop', this)" title="תצוגת מחשב">🖥️</button>
+                <button class="view-btn" onclick="setViewMode('mobile', this)" title="תצוגת מובייל">📱</button>
+            </div>
+            
+            <div class="iframe-wrapper">
+                <div class="iframe-shell mode-desktop" id="iframe-shell">
+                    <iframe id="visual-canvas"></iframe>
                 </div>
             </div>
-        </div>
-        <div class="footer">
-            <p style="margin: 0;">© 2026 כל הזכויות שמורות • נשלח באמצעות Visual Architect Pro</p>
-        </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="panel sidebar-right">
+            <div class="panel-header">
+                <span>קוד מקור - HTML בזמן אמת</span>
+                <button class="btn icon-btn" onclick="copyCode()" title="העתק קוד">📋</button>
+            </div>
+            <textarea id="code-editor" spellcheck="false" placeholder="ערוך קוד כאן והוא יתעדכן ויזואלית..."></textarea>
+        </aside>
     </div>
-</body>
-</html>`;
-        bootSystem(sampleHtml);
-    }
 
-    function loadBlankDoc() {
-        const blank = `<!DOCTYPE html>
+    <!-- STREAMING_CHUNK:Initializing Application State... -->
+    <script>
+        // --- System State ---
+        const STATE = {
+            history: [],
+            historyIdx: -1,
+            isSyncing: false,
+            theme: 'dark'
+        };
+
+        const defaultHTML = `<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מסמך חדש</title>
+    <title>אתר לדוגמה</title>
+    <meta name="description" content="זהו תיאור האתר עבור מנועי החיפוש">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 30px; background-color: #f8fafc; color: #1e293b; }
-        .container { max-width: 650px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 40px; background-color: #f1f5f9; color: #0f172a; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 50px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        h1 { color: #2563eb; font-size: 2.5rem; text-align: center; margin-bottom: 20px; }
+        p { text-align: center; font-size: 1.2rem; color: #475569; margin-bottom: 30px; }
+        .btn-wrapper { text-align: center; margin-top: 40px; }
+        .demo-btn { background: #2563eb; color: #fff; border: none; text-decoration: none; display: inline-block; padding: 14px 32px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(37,99,235,0.2); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 style="color: #2563eb; margin-top: 0;">ברוך הבא למסמך החדש שלך</h1>
-        <p style="font-size: 16px; line-height: 1.6;">זהו דף ריק שבו תוכל להתחיל לעצב. סמן כל אלמנט, ערוך ישירות, או הוסף רכיבים נוספים מהסרגל בצד.</p>
+        <h1>ברוך הבא ל-Elite Architect</h1>
+        <p>מערכת לעריכה ויזואלית מתקדמת עם שליטה מלאה בקוד.<br><strong>לחץ על אלמנט</strong> כדי להזיז, לשכפל או למחוק אותו.<br><strong>לחץ פעמיים על טקסט</strong> כדי לערוך אותו ישירות על המסמך (On-Canvas).</p>
+        <div class="btn-wrapper">
+            <a href="https://example.com" class="demo-btn">התחל לעצב עכשיו</a>
+        </div>
     </div>
 </body>
 </html>`;
-        bootSystem(blank);
-    }
 
-    // --- Clean Source Code Modal ---
-    function viewCleanCode() {
-        const c = STATE.masterDoc.cloneNode(true);
-        c.querySelectorAll('span[data-txt-id]').forEach(span => {
-            while(span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
-            span.remove();
-        });
-        c.querySelectorAll('[data-el-id]').forEach(e => e.removeAttribute('data-el-id'));
-        const html = new XMLSerializer().serializeToString(c);
-        
-        let m = document.getElementById('code-modal');
-        if(!m) {
-            m = document.createElement('div');
-            m.id = 'code-modal';
-            m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-            m.innerHTML = `
-                <div style="background:#1e293b;border-radius:12px;max-width:800px;width:100%;height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-                    <div style="padding:16px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;background:#0f172a;">
-                        <span style="font-weight:bold;color:white;">💻 קוד מקור HTML סופי (נקי)</span>
-                        <div>
-                            <button class="btn btn-primary" onclick="copyCode()" style="margin-left:8px;">📋 העתק</button>
-                            <button class="btn" onclick="document.getElementById('code-modal').style.display='none'">סגור</button>
+        // --- Init ---
+        window.onload = () => loadHTML(defaultHTML);
+
+        // STREAMING_CHUNK:Defining the Core Iframe Injection Engine...
+        // --- Core Engine: Load & Inject ---
+        function loadHTML(htmlString, pushToHistory = true) {
+            const iframe = document.getElementById('visual-canvas');
+            iframe.srcdoc = htmlString;
+            
+            iframe.onload = () => {
+                const doc = iframe.contentDocument;
+                const win = iframe.contentWindow;
+                
+                // Inject Magic UI Layer (Focus Ring & Floating Toolbars)
+                const uiLayer = doc.createElement('div');
+                uiLayer.id = 'arch-ui-layer';
+                uiLayer.innerHTML = `
+                    <style>
+                        #arch-ui-layer * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+                        #arch-focus-ring { position: absolute; border: 2px solid #3b82f6; pointer-events: none; display: none; z-index: 999999; box-shadow: 0 0 0 1px rgba(255,255,255,0.5); transition: top 0.1s, left 0.1s, width 0.1s, height 0.1s; }
+                        #arch-quick-actions { position: absolute; top: -42px; left: -2px; display: flex; background: #0f172a; color: white; border-radius: 6px; pointer-events: auto; gap: 2px; padding: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+                        .arch-btn { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 4px; transition: 0.2s; font-size: 14px; display: flex; align-items: center; justify-content: center; color: white; outline: none; }
+                        .arch-btn:hover { background: #334155; }
+                        .drag-handle { padding: 6px; cursor: move; opacity: 0.7; display: flex; align-items: center; color: white; }
+                        
+                        #arch-text-toolbar { position: absolute; display: none; background: #ffffff; color: #000; border-radius: 8px; border: 1px solid #cbd5e1; pointer-events: auto; gap: 4px; padding: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000000; flex-wrap: wrap; max-width: 300px;}
+                        .arch-t-btn { background: transparent; border: none; cursor: pointer; padding: 6px 10px; border-radius: 4px; transition: 0.2s; font-size: 14px; color: #334155; outline: none; }
+                        .arch-t-btn:hover { background: #f1f5f9; color: #2563eb; }
+                        .divider { width: 1px; background: #e2e8f0; margin: 0 4px; }
+                        
+                        [contenteditable="true"] { outline: 2px dashed #93c5fd !important; cursor: text; }
+                    </style>
+                    <div id="arch-focus-ring">
+                        <div id="arch-quick-actions">
+                            <div class="drag-handle" title="הזזה (למעלה/למטה)">☰</div>
+                            <button class="arch-btn" data-action="up" title="הזז למעלה">⬆️</button>
+                            <button class="arch-btn" data-action="down" title="הזז למטה">⬇️</button>
+                            <button class="arch-btn" data-action="clone" title="שכפל">📋</button>
+                            <button class="arch-btn" data-action="delete" title="מחק">🗑️</button>
+                            <button class="arch-btn" data-action="style" title="ערוך סגנון (CSS)">🎨</button>
                         </div>
                     </div>
-                    <textarea id="clean-code-area" readonly style="flex:1;background:#090d16;color:#38bdf8;padding:16px;font-family:monospace;border:none;resize:none;direction:ltr;"></textarea>
+                    <div id="arch-text-toolbar">
+                        <button class="arch-t-btn" data-format="bold" title="מודגש"><b>B</b></button>
+                        <button class="arch-t-btn" data-format="italic" title="נטוי"><i>I</i></button>
+                        <button class="arch-t-btn" data-format="underline" title="קו תחתון"><u>U</u></button>
+                        <div class="divider"></div>
+                        <input type="color" data-format="foreColor" title="צבע טקסט" style="width:26px;height:26px;padding:0;border:none;background:transparent;cursor:pointer;">
+                        <input type="color" data-format="hiliteColor" title="צבע רקע" value="#ffffff" style="width:26px;height:26px;padding:0;border:none;background:transparent;cursor:pointer;">
+                        <div class="divider"></div>
+                        <button class="arch-t-btn" data-format="justifyLeft" title="ישור לשמאל">👈</button>
+                        <button class="arch-t-btn" data-format="justifyCenter" title="מרכז">☝️</button>
+                        <button class="arch-t-btn" data-format="justifyRight" title="ישור לימין">👉</button>
+                        <div class="divider"></div>
+                        <button class="arch-t-btn" data-action="link" title="הוסף קישור">🔗</button>
+                    </div>
+                `;
+                doc.body.appendChild(uiLayer);
+
+                // STREAMING_CHUNK:Implementing UI Interactions within Canvas...
+                let selectedEl = null;
+                window.activeIframeSelectedEl = null; 
+                const ring = doc.getElementById('arch-focus-ring');
+                const textToolbar = doc.getElementById('arch-text-toolbar');
+
+                const updateUI = () => {
+                    if(selectedEl && ring.style.display === 'block') {
+                        const rect = selectedEl.getBoundingClientRect();
+                        ring.style.top = (rect.top + win.scrollY) + 'px';
+                        ring.style.left = (rect.left + win.scrollX) + 'px';
+                        ring.style.width = rect.width + 'px';
+                        ring.style.height = rect.height + 'px';
+                        
+                        if(textToolbar.style.display === 'flex') {
+                            textToolbar.style.top = (rect.top + win.scrollY - 55) + 'px';
+                            textToolbar.style.left = (rect.left + win.scrollX) + 'px';
+                        }
+                    }
+                };
+
+                doc.addEventListener('click', e => {
+                    if(e.target.closest('#arch-ui-layer')) return;
+                    if(e.target.tagName === 'A') e.preventDefault(); 
+                    
+                    if(selectedEl && selectedEl !== e.target && selectedEl.isContentEditable) {
+                        selectedEl.contentEditable = "false";
+                        textToolbar.style.display = 'none';
+                        debounceSync();
+                    }
+                    
+                    selectedEl = e.target;
+                    window.activeIframeSelectedEl = selectedEl;
+                    
+                    if(selectedEl === doc.body || selectedEl === doc.documentElement) {
+                        ring.style.display = 'none';
+                        selectedEl = null;
+                        window.activeIframeSelectedEl = null;
+                        return;
+                    }
+                    
+                    ring.style.display = 'block';
+                    updateUI();
+                });
+
+                doc.addEventListener('dblclick', e => {
+                    if(e.target.closest('#arch-ui-layer') || !selectedEl) return;
+                    
+                    selectedEl.contentEditable = "true";
+                    selectedEl.focus();
+                    
+                    textToolbar.style.display = 'flex';
+                    updateUI();
+                });
+
+                win.addEventListener('scroll', updateUI);
+                win.addEventListener('resize', updateUI);
+
+                // STREAMING_CHUNK:Handling Quick Actions and Formatting...
+                doc.getElementById('arch-quick-actions').addEventListener('click', e => {
+                    const btn = e.target.closest('button');
+                    if(!btn || !selectedEl) return;
+                    const action = btn.dataset.action;
+                    
+                    if(action === 'up' && selectedEl.previousElementSibling) {
+                        selectedEl.parentNode.insertBefore(selectedEl, selectedEl.previousElementSibling);
+                    } else if(action === 'down' && selectedEl.nextElementSibling) {
+                        selectedEl.parentNode.insertBefore(selectedEl.nextElementSibling, selectedEl);
+                    } else if(action === 'clone') {
+                        const clone = selectedEl.cloneNode(true);
+                        clone.removeAttribute('data-arch-id'); 
+                        selectedEl.parentNode.insertBefore(clone, selectedEl.nextSibling);
+                    } else if(action === 'delete') {
+                        selectedEl.remove();
+                        ring.style.display = 'none';
+                        textToolbar.style.display = 'none';
+                        selectedEl = null;
+                        window.activeIframeSelectedEl = null;
+                    } else if(action === 'style') {
+                        const currentStyle = selectedEl.getAttribute('style') || '';
+                        const newStyle = win.prompt('ערוך סגנון CSS ישירות:', currentStyle);
+                        if(newStyle !== null) selectedEl.setAttribute('style', newStyle);
+                    }
+                    
+                    if(selectedEl) updateUI();
+                    debounceSync();
+                });
+
+                textToolbar.addEventListener('mousedown', e => e.preventDefault()); 
+                
+                textToolbar.addEventListener('click', e => {
+                    const btn = e.target.closest('button');
+                    if(!btn) return;
+                    if(btn.dataset.format) doc.execCommand(btn.dataset.format, false, null);
+                    if(btn.dataset.action === 'link') {
+                        const url = win.prompt('הכנס כתובת קישור (URL):', 'https://');
+                        if(url) {
+                            doc.execCommand('createLink', false, url);
+                            debounceSync(); // Ensure link extraction runs immediately
+                        }
+                    }
+                    debounceSync();
+                });
+
+                textToolbar.addEventListener('input', e => {
+                    if(e.target.dataset.format) {
+                        doc.execCommand(e.target.dataset.format, false, e.target.value);
+                        debounceSync();
+                    }
+                });
+
+                doc.addEventListener('input', e => {
+                    if(e.target.closest('#arch-ui-layer')) return;
+                    debounceSync();
+                });
+
+                extractElements(doc);
+
+                if(!STATE.isSyncing) {
+                    document.getElementById('code-editor').value = getCleanHTML(doc);
+                }
+                if(pushToHistory) {
+                    saveHistory(getCleanHTML(doc));
+                }
+            };
+        }
+
+        // STREAMING_CHUNK:Configuring Code Sync and Debouncing...
+        let syncTimeout;
+        function debounceSync() {
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(syncToParent, 400);
+        }
+
+        function getCleanHTML(doc) {
+            const clone = doc.documentElement.cloneNode(true);
+            const ui = clone.querySelector('#arch-ui-layer');
+            if(ui) ui.remove();
+            clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+            clone.querySelectorAll('[data-arch-id]').forEach(el => el.removeAttribute('data-arch-id'));
+            return "<!DOCTYPE html>\n" + clone.outerHTML;
+        }
+
+        function syncToParent() {
+            STATE.isSyncing = true;
+            const doc = document.getElementById('visual-canvas').contentDocument;
+            const cleanHTML = getCleanHTML(doc);
+            
+            document.getElementById('code-editor').value = cleanHTML;
+            saveHistory(cleanHTML);
+            extractElements(doc); 
+            
+            // Reapply search filter after extraction updates the UI
+            filterSidebar(document.getElementById('search-input').value);
+            
+            STATE.isSyncing = false;
+        }
+
+        // STREAMING_CHUNK:Extracting SEO, Text, Links, and Media...
+        function extractElements(doc) {
+            let idCounter = 1;
+            
+            // Tagging
+            doc.querySelectorAll('h1, h2, h3, h4, p, span, div, li').forEach(el => {
+                if(!el.closest('#arch-ui-layer') && el.children.length === 0 && el.textContent.trim().length > 0) {
+                    if(!el.hasAttribute('data-arch-id')) el.setAttribute('data-arch-id', 'arch-t-' + (idCounter++));
+                }
+            });
+            doc.querySelectorAll('img').forEach(el => {
+                if(!el.closest('#arch-ui-layer')) {
+                    if(!el.hasAttribute('data-arch-id')) el.setAttribute('data-arch-id', 'arch-i-' + (idCounter++));
+                }
+            });
+            doc.querySelectorAll('a').forEach(el => {
+                if(!el.closest('#arch-ui-layer')) {
+                    if(!el.hasAttribute('data-arch-id')) el.setAttribute('data-arch-id', 'arch-a-' + (idCounter++));
+                }
+            });
+
+            // Target containers
+            const pText = document.getElementById('panel-text');
+            const pMedia = document.getElementById('panel-media');
+            const pLinks = document.getElementById('panel-links');
+            const pSEO = document.getElementById('panel-seo');
+            
+            pText.innerHTML = ''; 
+            pMedia.innerHTML = '';
+            pLinks.innerHTML = '';
+            pSEO.innerHTML = '';
+
+            // Extract Text
+            doc.querySelectorAll('[data-arch-id^="arch-t-"]').forEach(el => {
+                const div = document.createElement('div');
+                div.className = 'element-card';
+                div.innerHTML = `
+                    <div class="meta">${el.tagName}</div>
+                    <textarea oninput="updateFromSidebar('${el.getAttribute('data-arch-id')}', this.value, 'text')">${el.textContent}</textarea>
+                `;
+                pText.appendChild(div);
+            });
+
+            // Extract Media (Images)
+            doc.querySelectorAll('[data-arch-id^="arch-i-"]').forEach(el => {
+                const div = document.createElement('div');
+                div.className = 'element-card';
+                div.innerHTML = `
+                    <div class="meta">IMAGE</div>
+                    <img src="${el.src}">
+                    <div class="input-group">
+                        <label>כתובת תמונה (URL)</label>
+                        <input type="text" value="${el.src}" dir="ltr" oninput="updateFromSidebar('${el.getAttribute('data-arch-id')}', this.value, 'src')">
+                    </div>
+                `;
+                pMedia.appendChild(div);
+            });
+
+            // Extract Links
+            doc.querySelectorAll('[data-arch-id^="arch-a-"]').forEach(el => {
+                const div = document.createElement('div');
+                div.className = 'element-card';
+                const isBlank = el.getAttribute('target') === '_blank';
+                div.innerHTML = `
+                    <div class="meta">LINK / ANCHOR</div>
+                    <div class="input-group">
+                        <label>טקסט הקישור</label>
+                        <input type="text" value="${el.textContent}" oninput="updateFromSidebar('${el.getAttribute('data-arch-id')}', this.value, 'text')">
+                    </div>
+                    <div class="input-group">
+                        <label>כתובת הפניה (HREF)</label>
+                        <input type="text" value="${el.getAttribute('href') || ''}" dir="ltr" oninput="updateFromSidebar('${el.getAttribute('data-arch-id')}', this.value, 'href')">
+                    </div>
+                    <div class="input-group">
+                        <label>אופן פתיחה (Target)</label>
+                        <select onchange="updateFromSidebar('${el.getAttribute('data-arch-id')}', this.value, 'target')">
+                            <option value="_self" ${!isBlank ? 'selected' : ''}>אותו חלון</option>
+                            <option value="_blank" ${isBlank ? 'selected' : ''}>חלון חדש (_blank)</option>
+                        </select>
+                    </div>
+                `;
+                pLinks.appendChild(div);
+            });
+
+            // Extract SEO
+            const titleEl = doc.querySelector('title');
+            const descEl = doc.querySelector('meta[name="description"]');
+            
+            pSEO.innerHTML = `
+                <div class="element-card">
+                    <div class="meta">PAGE TITLE (כותרת העמוד)</div>
+                    <input type="text" value="${titleEl ? titleEl.textContent : ''}" placeholder="הכנס כותרת..." oninput="updateFromSidebar(null, this.value, 'seo-title')">
+                </div>
+                <div class="element-card">
+                    <div class="meta">META DESCRIPTION (תיאור)</div>
+                    <textarea placeholder="הכנס תיאור עבור מנועי חיפוש..." oninput="updateFromSidebar(null, this.value, 'seo-desc')">${descEl ? descEl.getAttribute('content') : ''}</textarea>
                 </div>
             `;
-            document.body.appendChild(m);
+            
+            // Empty states
+            if(pText.innerHTML === '') pText.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">אין טקסטים הניתנים לעריכה</div>';
+            if(pMedia.innerHTML === '') pMedia.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">אין תמונות במסמך</div>';
+            if(pLinks.innerHTML === '') pLinks.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">אין קישורים במסמך</div>';
         }
-        document.getElementById('clean-code-area').value = html;
-        m.style.display = 'flex';
-    }
 
-    function copyCode() {
-        const t = document.getElementById('clean-code-area');
-        t.select();
-        navigator.clipboard.writeText(t.value);
-        alert('הקוד הועתק ללוח בהצלחה!');
-    }
+        // STREAMING_CHUNK:Global Update Handler for Sidebar Edits...
+        window.updateFromSidebar = function(id, val, type) {
+            const doc = document.getElementById('visual-canvas').contentDocument;
+            
+            // SEO Updates
+            if(type === 'seo-title') {
+                let t = doc.querySelector('title');
+                if(!t) { t = doc.createElement('title'); doc.head.appendChild(t); }
+                t.textContent = val;
+            } 
+            else if (type === 'seo-desc') {
+                let m = doc.querySelector('meta[name="description"]');
+                if(!m) { m = doc.createElement('meta'); m.name = "description"; doc.head.appendChild(m); }
+                m.setAttribute('content', val);
+            } 
+            // Element Updates
+            else {
+                const el = doc.querySelector(`[data-arch-id="${id}"]`);
+                if(el) {
+                    if(type === 'text') el.textContent = val;
+                    else if(type === 'src') el.src = val;
+                    else if(type === 'href') el.setAttribute('href', val);
+                    else if(type === 'target') {
+                        if(val === '_self') el.removeAttribute('target');
+                        else el.setAttribute('target', val);
+                    }
+                }
+            }
+            debounceSync();
+        };
 
-    // Keyboard Shortcuts (Ctrl+Z, Ctrl+Y)
-    window.addEventListener('keydown', e => {
-        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-            if(e.shiftKey) { e.preventDefault(); redo(); }
-            else { e.preventDefault(); undo(); }
-        } else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-            e.preventDefault(); redo();
+        // STREAMING_CHUNK:Sidebar Filtering Logic...
+        function filterSidebar(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('.tab-panel .element-card').forEach(card => {
+                // Get all text content and input values from this card
+                let cardText = card.textContent.toLowerCase();
+                card.querySelectorAll('input, textarea').forEach(input => {
+                    cardText += ' ' + input.value.toLowerCase();
+                });
+                
+                if (cardText.includes(q)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
-    });
 
-</script>
+        // STREAMING_CHUNK:Editor Sync and Generic Functions...
+        const codeEditor = document.getElementById('code-editor');
+        let codeTimeout;
+        codeEditor.addEventListener('input', () => {
+            clearTimeout(codeTimeout);
+            codeTimeout = setTimeout(() => {
+                STATE.isSyncing = true; 
+                loadHTML(codeEditor.value, true);
+                setTimeout(()=> STATE.isSyncing = false, 100);
+            }, 800);
+        });
+
+        function insertElement(htmlString) {
+            const iframe = document.getElementById('visual-canvas');
+            const doc = iframe.contentDocument;
+            const wrapper = doc.createElement('div');
+            wrapper.innerHTML = htmlString;
+            const el = wrapper.firstElementChild;
+            
+            if(window.activeIframeSelectedEl && window.activeIframeSelectedEl.parentNode) {
+                window.activeIframeSelectedEl.parentNode.insertBefore(el, window.activeIframeSelectedEl.nextSibling);
+            } else {
+                doc.body.appendChild(el);
+            }
+            debounceSync();
+        }
+
+        function clearCanvas() {
+            if(confirm('האם אתה בטוח שברצונך לנקות את כל המסמך?')) {
+                loadHTML('<!DOCTYPE html>\n<html lang="he" dir="rtl"><head><meta charset="UTF-8"></head><body></body></html>');
+            }
+        }
+
+        // --- History (Undo / Redo) ---
+        function saveHistory(html) {
+            if(STATE.history[STATE.historyIdx] === html) return;
+            STATE.history = STATE.history.slice(0, STATE.historyIdx + 1);
+            STATE.history.push(html);
+            STATE.historyIdx++;
+            updateHistoryBtns();
+        }
+
+        function undo() {
+            if(STATE.historyIdx > 0) {
+                STATE.historyIdx--;
+                loadHTML(STATE.history[STATE.historyIdx], false);
+                updateHistoryBtns();
+            }
+        }
+
+        function redo() {
+            if(STATE.historyIdx < STATE.history.length - 1) {
+                STATE.historyIdx++;
+                loadHTML(STATE.history[STATE.historyIdx], false);
+                updateHistoryBtns();
+            }
+        }
+
+        function updateHistoryBtns() {
+            document.getElementById('btn-undo').disabled = STATE.historyIdx <= 0;
+            document.getElementById('btn-redo').disabled = STATE.historyIdx >= STATE.history.length - 1;
+        }
+
+        // --- UI & Utilities ---
+        function setTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`panel-${tabName}`).classList.add('active');
+            
+            // Re-apply search filter when switching tabs
+            filterSidebar(document.getElementById('search-input').value);
+        }
+
+        function setViewMode(mode, btn) {
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('iframe-shell').className = `iframe-shell mode-${mode}`;
+        }
+
+        function toggleTheme() {
+            STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark';
+            if(STATE.theme === 'light') document.body.setAttribute('data-theme', 'light');
+            else document.body.removeAttribute('data-theme');
+        }
+
+        function copyCode() {
+            codeEditor.select();
+            document.execCommand('copy');
+            alert('הקוד הועתק בהצלחה!');
+        }
+
+        function importFile(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => loadHTML(ev.target.result);
+            reader.readAsText(file);
+        }
+
+        function exportFile() {
+            const code = document.getElementById('code-editor').value;
+            const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'elite_architect_export.html';
+            link.click();
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', e => {
+            if(e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+            if(e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+        });
+    </script>
 </body>
+</html>
