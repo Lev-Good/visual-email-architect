@@ -543,17 +543,16 @@
                     floatingBar = document.createElement('div');
                     floatingBar.id = 'arch-floating-bar';
                     floatingBar.style.cssText = 'position:absolute;display:none;background:#0f172a;color:white;border-radius:8px;padding:4px 8px;z-index:999999;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:system-ui,sans-serif;font-size:12px;gap:4px;align-items:center;user-select:none;direction:rtl;';
-                    floatingBar.innerHTML = `
-                        <button data-action="moveUp" title="הזז למעלה" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;padding:4px;font-size:13px;">⬆️</button>
-                        <button data-action="moveDown" title="הזז למטה" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;padding:4px;font-size:13px;">⬇️</button>
-                        <div style="width:1px;height:16px;background:#475569;margin:0 2px;"></div>
-                        <button data-action="bold" title="הדגש טקסט" style="background:transparent;border:none;color:white;cursor:pointer;padding:4px;font-weight:bold;">B</button>
-                        <button data-action="italic" title="הטה טקסט" style="background:transparent;border:none;color:white;cursor:pointer;padding:4px;font-style:italic;">I</button>
-                        <button data-action="link" title="הוסף קישור" style="background:transparent;border:none;color:#38bdf8;cursor:pointer;padding:4px;">🔗</button>
-                        <div style="width:1px;height:16px;background:#475569;margin:0 2px;"></div>
-                        <button data-action="dup" title="שכפל" style="background:transparent;border:none;color:#a7f3d0;cursor:pointer;padding:4px;">📋</button>
-                        <button data-action="del" title="מחק" style="background:transparent;border:none;color:#fca5a5;cursor:pointer;padding:4px;">🗑️</button>
-                    `;
+                    floatingBar.innerHTML = '' +
+                        '<button data-action="moveUp" title="הזז למעלה" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;padding:4px;font-size:13px;">⬆️</button>' +
+                        '<button data-action="moveDown" title="הזז למטה" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;padding:4px;font-size:13px;">⬇️</button>' +
+                        '<div style="width:1px;height:16px;background:#475569;margin:0 2px;"></div>' +
+                        '<button data-action="bold" title="הדגש טקסט" style="background:transparent;border:none;color:white;cursor:pointer;padding:4px;font-weight:bold;">B</button>' +
+                        '<button data-action="italic" title="הטה טקסט" style="background:transparent;border:none;color:white;cursor:pointer;padding:4px;font-style:italic;">I</button>' +
+                        '<button data-action="link" title="הוסף קישור" style="background:transparent;border:none;color:#38bdf8;cursor:pointer;padding:4px;">🔗</button>' +
+                        '<div style="width:1px;height:16px;background:#475569;margin:0 2px;"></div>' +
+                        '<button data-action="dup" title="שכפל" style="background:transparent;border:none;color:#a7f3d0;cursor:pointer;padding:4px;">📋</button>' +
+                        '<button data-action="del" title="מחק" style="background:transparent;border:none;color:#fca5a5;cursor:pointer;padding:4px;">🗑️</button>';
                     document.body.appendChild(floatingBar);
 
                     floatingBar.addEventListener('click', e => {
