@@ -509,11 +509,9 @@
             
             // 1. CSS Fixes for Heavy Files & Hover outline
             const css = document.createElement('style');
-            css.innerHTML = `
-                html, body { height: auto !important; min-height: 100% !important; overflow: auto !important; }
-                [data-txt-id], [data-el-id] { cursor: text; transition: outline 0.15s ease; }
-                [data-txt-id]:hover, [data-el-id]:hover { outline: 1.5px dashed #3b82f6 !important; }
-            `;
+            css.innerHTML = 'html, body { height: auto !important; min-height: 100% !important; overflow: auto !important; }' +
+                '[data-txt-id], [data-el-id] { cursor: text; transition: outline 0.15s ease; }' +
+                '[data-txt-id]:hover, [data-el-id]:hover { outline: 1.5px dashed #3b82f6 !important; }';
             document.head.appendChild(css);
 
             // 2. Kill Preloaders
