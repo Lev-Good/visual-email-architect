@@ -246,9 +246,25 @@
             <div id="panel-seo" class="panel"></div>
         </div>
     </aside>
-
     <main class="preview-area">
         <div class="preview-toolbar">
+            <div class="tool-actions-group" style="display:flex; align-items:center; gap:4px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:6px;">
+                <button class="icon-btn" onclick="execCmdInFrame('bold')" title="מודגש (Ctrl+B)"><b>B</b></button>
+                <button class="icon-btn" onclick="execCmdInFrame('italic')" title="נטוי (Ctrl+I)"><i>I</i></button>
+                <button class="icon-btn" onclick="execCmdInFrame('underline')" title="קו תחתון (Ctrl+U)"><u>U</u></button>
+                <div style="width:1px; height:18px; background:#475569; margin:0 2px;"></div>
+                <button class="icon-btn" onclick="execCmdInFrame('justifyRight')" title="יישור לימין">⏩</button>
+                <button class="icon-btn" onclick="execCmdInFrame('justifyCenter')" title="מרכוז">⏸️</button>
+                <button class="icon-btn" onclick="execCmdInFrame('justifyLeft')" title="יישור לשמאל">⏪</button>
+                <div style="width:1px; height:18px; background:#475569; margin:0 2px;"></div>
+                <label title="צבע טקסט" style="cursor:pointer; display:flex; align-items:center; color:#94a3b8; font-size:0.8rem; gap:4px;">
+                    🎨 <input type="color" onchange="execCmdInFrame('foreColor', this.value)" style="width:20px; height:20px; border:none; padding:0; background:transparent; cursor:pointer;">
+                </label>
+                <label title="צבע רקע" style="cursor:pointer; display:flex; align-items:center; color:#94a3b8; font-size:0.8rem; gap:4px; margin-right:4px;">
+                    🖍️ <input type="color" onchange="execCmdInFrame('hiliteColor', this.value)" value="#ffffff" style="width:20px; height:20px; border:none; padding:0; background:transparent; cursor:pointer;">
+                </label>
+            </div>
+            <div style="width:1px; background:#334155; margin:0 5px;"></div>
             <button class="icon-btn active" onclick="setMode('desktop', this)" title="מחשב">🖥️ מחשב</button>
             <button class="icon-btn" onclick="setMode('tablet', this)" title="טאבלט">📟 טאבלט</button>
             <button class="icon-btn" onclick="setMode('mobile', this)" title="סמארטפון">📱 נייד</button>
@@ -341,11 +357,10 @@
         const nodes = [];
         while(walker.nextNode()) nodes.push(walker.currentNode);
 
-        // Wrap them in spans with IDs
+        // Wrap them in editable spans with IDs
         nodes.forEach(node => {
             const span = STATE.masterDoc.createElement('span');
             span.setAttribute('data-txt-id', genID());
-            span.setAttribute('style', 'display:contents');
             span.textContent = node.nodeValue;
             node.parentNode.replaceChild(span, node);
         });
@@ -492,9 +507,13 @@
         script.textContent = `
             const TOKEN = "${STATE.token}";
             
-            // 1. CSS Fixes for Heavy Files
+            // 1. CSS Fixes for Heavy Files & Hover outline
             const css = document.createElement('style');
-            css.innerHTML = 'html, body { height: auto !important; min-height: 100% !important; overflow: auto !important; }';
+            css.innerHTML = `
+                html, body { height: auto !important; min-height: 100% !important; overflow: auto !important; }
+                [data-txt-id], [data-el-id] { cursor: text; transition: outline 0.15s ease; }
+                [data-txt-id]:hover, [data-el-id]:hover { outline: 1.5px dashed #3b82f6 !important; }
+            `;
             document.head.appendChild(css);
 
             // 2. Kill Preloaders
@@ -521,7 +540,7 @@
 
                 if(d.type === 'text') {
                     const el = document.querySelector('[data-txt-id="'+d.id+'"]');
-                    if(el) el.innerHTML = d.val; // Safe innerHTML for <br>
+                    if(el) el.innerHTML = d.val;
                 }
                 
                 if(d.type === 'attr') {
@@ -532,6 +551,14 @@
                 if(d.type === 'seo-title') document.title = d.val;
 
                 if(d.type === 'hl') showBox(d.id, d.kind);
+
+                if(d.type === 'exec-cmd') {
+                    if(activeEl) {
+                        activeEl.focus();
+                        document.execCommand(d.cmd, false, d.val);
+                        onElementEdited();
+                    }
+                }
             });
 
             // 5. Advanced Inline Editing & Floating Action Bar
@@ -612,12 +639,12 @@
             document.addEventListener('click', e => {
                 const w = e.target.closest('[data-txt-id], [data-el-id]');
                 if(w) {
-                    e.preventDefault(); e.stopPropagation();
                     if(activeEl && activeEl !== w) {
                         activeEl.removeAttribute('contenteditable');
                     }
                     activeEl = w;
                     activeEl.setAttribute('contenteditable', 'true');
+                    activeEl.focus();
                     const isTxt = w.hasAttribute('data-txt-id');
                     const id = isTxt ? w.getAttribute('data-txt-id') : w.getAttribute('data-el-id');
                     window.parent.postMessage({ token: TOKEN, type: 'sync', id }, '*');
@@ -632,7 +659,7 @@
                     }
                     if(box) box.style.display = 'none';
                 }
-            }, true);
+            }, false);
 
             // Live keystroke updates directly from document
             document.addEventListener('input', e => {
@@ -802,6 +829,10 @@
 
     function hl(id, kind) { msg({ type: 'hl', id, kind }); }
     
+    function execCmdInFrame(cmd, val = null) {
+        msg({ type: 'exec-cmd', cmd, val });
+    }
+
     function msg(data) {
         data.token = STATE.token;
         const w = document.getElementById('preview-frame').contentWindow;
@@ -898,7 +929,6 @@
             h.style.cssText = 'color:#1e3a8a; font-size:24px; margin:0 0 10px 0;';
             const s = STATE.masterDoc.createElement('span');
             s.setAttribute('data-txt-id', genID());
-            s.setAttribute('style', 'display:contents');
             s.textContent = 'כותרת חדשה מרשימה';
             h.appendChild(s);
             div.appendChild(h);
@@ -907,7 +937,6 @@
             h.style.cssText = 'color:#4b5563; font-size:18px; margin:0 0 8px 0;';
             const s = STATE.masterDoc.createElement('span');
             s.setAttribute('data-txt-id', genID());
-            s.setAttribute('style', 'display:contents');
             s.textContent = 'תת כותרת תיאורית';
             h.appendChild(s);
             div.appendChild(h);
@@ -916,7 +945,6 @@
             p.style.cssText = 'font-size:16px; line-height:1.6; color:#374151; margin:0;';
             const s = STATE.masterDoc.createElement('span');
             s.setAttribute('data-txt-id', genID());
-            s.setAttribute('style', 'display:contents');
             s.textContent = 'זהו מקטע טקסט לדוגמה. תוכל ללחוץ עליו ישירות כדי להקליד ולערוך אותו בחופשיות.';
             p.appendChild(s);
             div.appendChild(p);
@@ -928,7 +956,6 @@
             a.style.cssText = 'display:inline-block; background-color:#2563eb; color:#ffffff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:16px;';
             const s = STATE.masterDoc.createElement('span');
             s.setAttribute('data-txt-id', genID());
-            s.setAttribute('style', 'display:contents');
             s.textContent = 'לחץ כאן ←';
             a.appendChild(s);
             div.appendChild(a);
@@ -944,20 +971,20 @@
             div.innerHTML = `
                 <div style="display:flex; gap:16px; margin:10px 0;">
                     <div style="flex:1; background:#f3f4f6; padding:16px; border-radius:8px;">
-                        <h4 style="margin:0 0 6px 0; color:#1f2937;"><span data-txt-id="${genID()}" style="display:contents">עמודה 1</span></h4>
-                        <p style="margin:0; font-size:14px; color:#4b5563;"><span data-txt-id="${genID()}" style="display:contents">תוכן העמודה הראשונה.</span></p>
+                        <h4 style="margin:0 0 6px 0; color:#1f2937;"><span data-txt-id="${genID()}">עמודה 1</span></h4>
+                        <p style="margin:0; font-size:14px; color:#4b5563;"><span data-txt-id="${genID()}">תוכן העמודה הראשונה.</span></p>
                     </div>
                     <div style="flex:1; background:#f3f4f6; padding:16px; border-radius:8px;">
-                        <h4 style="margin:0 0 6px 0; color:#1f2937;"><span data-txt-id="${genID()}" style="display:contents">עמודה 2</span></h4>
-                        <p style="margin:0; font-size:14px; color:#4b5563;"><span data-txt-id="${genID()}" style="display:contents">תוכן העמודה השנייה.</span></p>
+                        <h4 style="margin:0 0 6px 0; color:#1f2937;"><span data-txt-id="${genID()}">עמודה 2</span></h4>
+                        <p style="margin:0; font-size:14px; color:#4b5563;"><span data-txt-id="${genID()}">תוכן העמודה השנייה.</span></p>
                     </div>
                 </div>`;
         } else if (type === 'card') {
             div.innerHTML = `
                 <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); margin:10px 0;">
-                    <h3 style="margin:0 0 10px 0; color:#111827;"><span data-txt-id="${genID()}" style="display:contents">כרטיס תוכן מודרני</span></h3>
-                    <p style="margin:0 0 15px 0; color:#6b7280; font-size:14px; line-height:1.5;"><span data-txt-id="${genID()}" style="display:contents">הוסף מידע חשוב, הדגשים או עדכונים לקוראים שלך.</span></p>
-                    <a data-el-id="${genID()}" href="#" style="color:#2563eb; font-weight:600; text-decoration:none; font-size:14px;"><span data-txt-id="${genID()}" style="display:contents">קרא עוד ←</span></a>
+                    <h3 style="margin:0 0 10px 0; color:#111827;"><span data-txt-id="${genID()}">כרטיס תוכן מודרני</span></h3>
+                    <p style="margin:0 0 15px 0; color:#6b7280; font-size:14px; line-height:1.5;"><span data-txt-id="${genID()}">הוסף מידע חשוב, הדגשים או עדכונים לקוראים שלך.</span></p>
+                    <a data-el-id="${genID()}" href="#" style="color:#2563eb; font-weight:600; text-decoration:none; font-size:14px;"><span data-txt-id="${genID()}">קרא עוד ←</span></a>
                 </div>`;
         } else if (type === 'divider') {
             div.innerHTML = `<hr style="border:none; border-top:1px solid #e2e8f0; margin:20px 0;">`;
